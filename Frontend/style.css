@@ -1,0 +1,109 @@
+*, *::before, *::after {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	font-family:Georgia, 'Times New Roman', Times, serif;
+}
+
+body {
+	height: 100vh;
+	background-color: #f0f0f0;
+}
+
+#app-title {
+	margin: 1rem;
+
+	text-align: center;
+	font-size: 3rem;
+}
+
+#app {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
+}
+
+#input-container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+	width: 50%;
+	margin-top: 2rem;
+}
+
+
+#input-field {
+	width: 100%;
+
+	padding: .4rem;
+	font-size: 1.2rem;
+
+	border-radius: .2rem;
+	border: 1px solid #333;
+}
+
+
+
+.list-items {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+
+	width: 50%;
+
+	margin-top: 2rem;
+}
+
+
+
+.item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+
+	width: 100%;
+	margin: .4rem;
+}
+
+
+.item .text {
+	font-size: 1.4rem;
+	font-style: italic;
+
+	border-bottom: .1rem dashed #333;
+}
+
+
+.btn {
+	width: 2rem;
+	height: 2rem;
+
+	font-size: 1rem;
+
+	background-color: #333;
+	color: white;
+
+	border: none;
+	border-radius: .1rem;
+	cursor: pointer;
+}
+
+
+
+.btn-delete {
+	background-color: rgb(143, 11, 11);
+}
+
+
+@media (max-aspect-ratio: 5/6) {
+	#input-container {
+		width: 80%;
+	}
+
+	.list-items {
+		width: 80%;
+	}
+
+}

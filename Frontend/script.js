@@ -1,0 +1,67 @@
+
+class Item {
+	constructor(value) {
+		this.value = value;
+		this.timestamp = Date.now();
+		this.itemDOM = null;
+	}
+
+	removeFromDOM() {
+		this.itemDOM.remove();
+	}
+
+	renderToDOM(parentDOM) {
+		// Create elements
+		this.itemDOM = document.createElement('div');
+		const textDOM = document.createElement('span');
+		const deleteBtnDOM = document.createElement('button');
+
+		// Add classes
+		this.itemDOM.classList.add('item');
+		textDOM.classList.add('text');
+		deleteBtnDOM.classList.add('btn-delete', 'btn');
+
+		// Add content
+		textDOM.textContent = this.value;
+		deleteBtnDOM.textContent = '-';
+		deleteBtnDOM.addEventListener('click', () => {
+			this.removeFromDOM();
+			removeItem(this);
+		});
+
+		// Append elements
+		this.itemDOM.appendChild(textDOM);
+		this.itemDOM.appendChild(deleteBtnDOM);
+		parentDOM.insertBefore(this.itemDOM, parentDOM.firstChild);
+	}
+}
+
+
+
+// DOM elements
+const itemsListDOM = document.querySelector('.list-items');
+const inputFieldDOM = document.querySelector('.input-field');
+
+let items = [];
+
+
+function addItem() {
+	const value = inputFieldDOM.value;
+	if (!value) {
+		// TODO: warn, empty value
+		return;
+	}
+	const newItem = new Item(value);
+	items.unshift(newItem);
+	newItem.renderToDOM(itemsListDOM);
+
+	inputFieldDOM.value = '';
+}
+
+function removeItem(item) {
+	const index = items.indexOf(item);
+	items.splice(index, 1);
+}
+
+
+inputFieldDOM.addEventListener('keydown', (e) => {if (e.key === 'Enter') addItem()});
