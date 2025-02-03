@@ -4,6 +4,7 @@ class Item {
 		this.value = value;
 		this.timestamp = Date.now();
 		this.itemDOM = null;
+		this.marked = false;
 	}
 
 	removeFromDOM() {
@@ -14,22 +15,34 @@ class Item {
 		// Create elements
 		this.itemDOM = document.createElement('div');
 		const textDOM = document.createElement('span');
+		const checkboxDOM = document.createElement('input');
 		const deleteBtnDOM = document.createElement('button');
 
 		// Add classes
 		this.itemDOM.classList.add('item');
 		textDOM.classList.add('text');
+		checkboxDOM.classList.add('check-item');
 		deleteBtnDOM.classList.add('btn-delete', 'btn');
 
-		// Add content
-		textDOM.textContent = this.value;
+		// Handle Eventlisteners for buttons
+		checkboxDOM.type = 'checkbox';
+		checkboxDOM.name = 'check-item';
+		checkboxDOM.addEventListener('change', () => {
+			this.marked = !this.marked;
+			textDOM.classList.toggle('marked');
+		});
+
 		deleteBtnDOM.textContent = '-';
 		deleteBtnDOM.addEventListener('click', () => {
 			this.removeFromDOM();
 			removeItem(this);
 		});
 
+		// Add Content
+		textDOM.textContent = this.value;
+
 		// Append elements
+		this.itemDOM.appendChild(checkboxDOM);
 		this.itemDOM.appendChild(textDOM);
 		this.itemDOM.appendChild(deleteBtnDOM);
 		parentDOM.insertBefore(this.itemDOM, parentDOM.firstChild);
