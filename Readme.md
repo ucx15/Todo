@@ -38,9 +38,9 @@ The backend should be running on [http://localhost:5000](http://localhost:5000).
 
 ## TODOs
 
-- [ ] Reordering of tasks
+- [ ] Login system (Implement proper account based login)
 - [ ] Database for persistant storage
-- [ ] Login system
+- [ ] Reordering of tasks
 - [ ] lists
 - [ ] Export todolist to .PNG file
 - [ ] Host it. _Maybe 🤷🏻‍♂️_
