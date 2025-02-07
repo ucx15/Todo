@@ -36,6 +36,17 @@ The frontend should be running on [http://localhost:3000](http://localhost:3000)
 
 The backend should be running on [http://localhost:5000](http://localhost:5000). (Not to be accessed via browser)
 
+## TODOs
+
+- [ ] Reordering of tasks
+- [ ] Database for persistant storage
+- [ ] Login system
+- [ ] lists
+- [ ] Export todolist to .PNG file
+- [ ] Host it. _Maybe 🤷🏻‍♂️_
+
 ## Author
 
 [ucx15 @ GitHub](https://github.com/ucx15)
+
+[Mail Me](mailto:inboxofuc@gmail.com)
