@@ -1,16 +1,7 @@
 {
-  "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.21.2",
-    "sqlite3": "^5.1.7",
-    "uuid": "^11.0.5"
-  },
-  "name": "backend-todo",
+  "name": "frontend-todo",
   "version": "1.0.0",
   "main": "server.js",
-  "devDependencies": {
-    "nodemon": "^3.1.9"
-  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
@@ -18,5 +9,12 @@
   },
   "author": "ucx15",
   "license": "MIT",
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
+  }
 }

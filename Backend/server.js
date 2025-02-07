@@ -1,6 +1,8 @@
 const express = require('express');
 const sqlite3 = require('sqlite3');
 const cors    = require('cors');
+const uuid    = require('uuid');
+
 
 // Constants
 const PORT = 3000;
@@ -23,6 +25,7 @@ app.use(express.json());
 function generateTables() {
 	const query = `CREATE TABLE IF NOT EXISTS tasks (
 		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		uuid TEXT NOT NULL,
 		value TEXT NOT NULL,
 		timestamp TEXT NOT NULL,
 		marked INTEGER DEFAULT 0
@@ -40,9 +43,10 @@ generateTables();
 
 
 function addTasktoDB(task, callback) {
-	const query = `INSERT INTO tasks (value, timestamp, marked) VALUES (?, ?, ?)`;
+	const query = `INSERT INTO tasks (uuid, value, timestamp, marked) VALUES (?, ?, ?, ?)`;
+	const task_uuid = uuid.v4();
 
-	db.run(query, task.value, task.timestamp, task.marked, (err) => {
+	db.run(query, task_uuid, task.value, task.timestamp, task.marked, (err) => {
 		if (err) {
 			console.error("Error adding task");
 			return callback(false);
@@ -50,7 +54,7 @@ function addTasktoDB(task, callback) {
 
 		else {
 			console.log("Task added successfully");
-			return callback(true);
+			return callback(true, task_uuid);
 		}
 	});
 }
@@ -88,16 +92,16 @@ function toggleTaskinDB(taskid, marked, callback) {
 }
 
 
-function removeTaskfromDB(taskid, callback) {
-	const query = `DELETE FROM tasks WHERE id = ?`;
+function removeTaskfromDB(taskuuid, callback) {
+	const query = `DELETE FROM tasks WHERE uuid = ?`;
 
-	db.run(query, taskid, (err) => {
+	db.run(query, taskuuid, (err) => {
 		if (err) {
 			console.error("Error removing task");
 			return callback(false);
 		}
 		else {
-			console.log("Task removed successfully");
+			console.log(`Removed:  ${taskuuid} ✔️`);
 			return callback(true);
 		}
 	});
@@ -109,15 +113,16 @@ app.post("/api/add-task", async (req, res) => {
 	const task = req.body.task;
 
 	console.log(task);
-	addTasktoDB(task, added => {
+
+	addTasktoDB(task, (added, task_uuid) => {
 		if (added) {
-			res.sendStatus(200)
+			res.json({uuid: task_uuid});
 			return;
 		}
-		res.sendStatus(400)
+		res.sendStatus(400);
 	});
-
 });
+
 
 // Marking a Task
 app.put("/api/toggle-task", async (req, res) => {
@@ -149,16 +154,15 @@ app.get("/api/tasks", (req, resp) => {
 })
 
 app.delete("/api/remove-task", (req, res) => {
-	const taskid = req.body.id;
+	const taskuuid = req.body.uuid;
 
-	removeTaskfromDB(taskid, removed => {
+	removeTaskfromDB(taskuuid, removed => {
 		if (removed) {
 			res.sendStatus(200);
 			return;
 		}
-		else {
-			res.sendStatus(400);
-		}
+
+		res.sendStatus(400);
 	});
 });
 
