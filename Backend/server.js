@@ -1,3 +1,4 @@
+const utils   = require("node:util");
 const express = require('express');
 const sqlite3 = require('sqlite3');
 const cors    = require('cors');
@@ -48,12 +49,9 @@ function addTasktoDB(task, callback) {
 
 	db.run(query, task_uuid, task.value, task.timestamp, task.marked, (err) => {
 		if (err) {
-			console.error("Error adding task");
 			return callback(false);
 		}
-
 		else {
-			console.log("Task added successfully");
 			return callback(true, task_uuid);
 		}
 	});
@@ -75,33 +73,29 @@ function getTasksFromDB(callback) {
 	});
 }
 
-
 function toggleTaskinDB(taskid, marked, callback) {
 	const query = `UPDATE tasks SET marked = ? WHERE id = ?`;
 
 	db.run(query, marked, taskid, (err) => {
 		if (err) {
-			console.error("Error toggling task");
+			console.error(err);
 			return callback(false);
 		}
 		else {
-			console.log("Task toggled successfully");
 			return callback(true);
 		}
 	});
 }
-
 
 function removeTaskfromDB(taskuuid, callback) {
 	const query = `DELETE FROM tasks WHERE uuid = ?`;
 
 	db.run(query, taskuuid, (err) => {
 		if (err) {
-			console.error("Error removing task");
+			console.error(err);
 			return callback(false);
 		}
 		else {
-			console.log(`Removed:  ${taskuuid} ✔️`);
 			return callback(true);
 		}
 	});
@@ -109,63 +103,88 @@ function removeTaskfromDB(taskuuid, callback) {
 
 
 // Routes
-app.post("/api/add-task", async (req, res) => {
-	const task = req.body.task;
 
-	console.log(task);
+// Fetching Tasks
+app.get("/favicon.ico", (req, resp) => {
+	resp.sendStatus(404);
+})
+
+app.get("/api/tasks", (req, resp) => {
+
+	getTasksFromDB(tasks => {
+
+		if (tasks) {
+			console.log(`FETCHED: All Tasks`);
+			resp.status(200).json(tasks);
+			return;
+		}
+
+		console.error(utils.styleText('red', `FAILED to FETCH: All Tasks`));
+		resp.sendStatus(400);
+	});
+})
+
+// Adding Tasks
+app.post("/api/add-task", (req, res) => {
+	const task = req.body.task;
 
 	addTasktoDB(task, (added, task_uuid) => {
 		if (added) {
+			console.log(`ADDED:  "${task.value}"  uuid:${task_uuid}`);
 			res.json({uuid: task_uuid});
 			return;
 		}
+
+		console.error(utils.styleText(`FAILED to ADD:  "${task.value}"  uuid:?`));
 		res.sendStatus(400);
 	});
 });
 
-
 // Marking a Task
-app.put("/api/toggle-task", async (req, res) => {
-	const taskid = req.body.id;
-	const marked = req.body.marked;
+app.put("/api/toggle-task", (req, res) => {
+	const task = req.body.task;
 
-	toggleTaskinDB(taskid, marked, toggled => {
+	// TODO: NOT reflecting in the database, Fix it!!!
+	toggleTaskinDB(task.id, task.marked, toggled => {
 		if (toggled) {
+			if (task.marked){
+				console.log(`MARKED:  "${task.value}"  uuid:${task.uuid}  marked:${task.marked}`);
+			}
+			else {
+				console.log(`UNMARKED:  "${task.value}"  uuid:${task.uuid}  marked:${task.marked}`);
+			}
 			res.sendStatus(200);
 			return;
 		}
 		else {
+
+			console.error(utils.styleText(`FAILED to MARK:  "${task.value}"  uuid:?`));
 			res.sendStatus(400);
 		}
 	});
 });
 
-// Fetching Tasks
-app.get("/api/tasks", (req, resp) => {
-	getTasksFromDB(tasks => {
-		if (!tasks) {
-			resp.sendStatus(400);
-			return;
-		}
-		else {
-			resp.json(tasks);
-		}
-	});
-})
 
+// Deleting Tasks
 app.delete("/api/remove-task", (req, res) => {
-	const taskuuid = req.body.uuid;
+	// const taskuuid = req.body.uuid;
+	const task = req.body.task;
 
-	removeTaskfromDB(taskuuid, removed => {
+	removeTaskfromDB(task.uuid, removed => {
 		if (removed) {
+
+			console.log(`REMOVED:  "${task.value}"  ${task.uuid}`);
 			res.sendStatus(200);
 			return;
 		}
 
+		console.error(utils.styleText('red', `FAILED to REMOVE:  ${task.value}  ${task.uuid}`));
 		res.sendStatus(400);
 	});
 });
 
+
+// Server
 app.listen(PORT, () => {
 	console.log(`Backend Running @ http://${HOST}:${PORT}`);
 });

@@ -8,12 +8,29 @@ class Item {
 		this.itemDOM = null;
 	}
 
+
+	makeFromObject(obj) {
+		this.uuid      = obj.uuid;
+		this.value     = obj.value;
+		this.timestamp = obj.timestamp;
+		this.marked    = obj.marked;
+	}
+
+
+	makeFromElements(uuid, value, timestamp, marked) {
+		this.uuid = uuid;
+		this.value = value;
+		this.timestamp = timestamp;
+		this.marked = marked;
+		return this;
+	}
+
 	removeFromDOM() {
 		this.itemDOM.remove();
 	}
 
 	renderToDOM(parentDOM) {
-		// Create elements
+		// Create task
 		this.itemDOM = document.createElement('div');
 		const textDOM = document.createElement('span');
 		const checkboxDOM = document.createElement('input');
@@ -31,6 +48,7 @@ class Item {
 		checkboxDOM.addEventListener('change', () => {
 			this.marked = !this.marked;
 			textDOM.classList.toggle('marked');
+			toggleItem(this);
 		});
 
 		deleteBtnDOM.textContent = '-';
@@ -59,15 +77,36 @@ const inputFieldDOM = document.querySelector('.input-field');
 let items = [];
 
 
-function addItem() {
-	const value = inputFieldDOM.value;
-	if (!value) {
-		// TODO: warn, empty value
-		return;
-	}
+// Network Updates
 
-	const newItem = new Item(value);
+function fetchItems() {
+	fetch("http://localhost:3000/api/tasks", {
+		method: 'GET',
+	})
+	.then(resp => {
+		if (!resp.ok) {
+			throw new Error('Failed to fetch items');
+		}
 
+		return resp.json();
+	})
+	.then(resp => {
+		resp.forEach(task => {
+			let item = new Item();
+			item.makeFromObject(task);
+			// item.makeFromElements(task.uuid, task.value, task.timestamp, task.marked);
+
+			items.unshift(item);
+			item.renderToDOM(itemsListDOM);
+		});
+	})
+	.catch(err => {
+		console.error(err);
+	});
+}
+
+// TODO: Decouple network requests and DOM Manipulation
+function addItem(newItem) {
 	fetch("http://localhost:3000/api/add-task", {
 		method: 'POST',
 		headers: {
@@ -107,7 +146,7 @@ function removeItem(item) {
 		headers: {
 			'Content-Type': 'application/json'
 		},
-		body: JSON.stringify({uuid : item.uuid})
+		body: JSON.stringify({task : item})
 	}).
 	then(resp => {
 		if (!resp.ok) {
@@ -121,9 +160,49 @@ function removeItem(item) {
 
 }
 
+function toggleItem(item) {
+	if (!item || !items.includes(item) || !item.uuid) {
+		console.error('Invalid item');
+		return;
+	}
 
-inputFieldDOM.addEventListener('keydown', (e) => {if (e.key === 'Enter') addItem()});
+	fetch("http://localhost:3000/api/toggle-task", {
+		method: 'PUT',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify({task : item})
+	}).
+	then(resp => {
+		if (!resp.ok) {
+			console.error('Failed to toggle item');
+			return;
+		}
+
+		console.log(`TOGGLE:  ${item.uuid} ✔️`);
+	});
+}
 
 
-// TODO: Fetch items from server and Render
-// TODO: Mark items
+// EventListeners
+inputFieldDOM.addEventListener('keydown', (e) => {
+	if (e.key === 'Enter') {
+
+		const value = inputFieldDOM.value;
+		// TODO: warn in UI if empty value
+
+		if ( value ) {
+			const item = new Item(value);
+			addItem(item);
+		}
+
+	}
+});
+
+window.onload = (event) => {
+	fetchItems();
+};
+
+
+// TODO: Fix checkbox Rendering of fetched items
+// TODO: Make operations batched, to avoid unnecessary network load
